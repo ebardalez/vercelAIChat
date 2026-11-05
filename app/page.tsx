@@ -50,6 +50,31 @@ export default function Chat() {
                   </details>
                 );
               }
+              if (part.type === "tool-getHora") {
+                // Un part de herramienta cambia de `state` mientras avanza el stream:
+                // input-streaming -> input-available -> output-available | output-error
+                // Usamos part.toolCallId como key porque el mismo part se va actualizando.
+                return (
+                  <div
+                    key={part.toolCallId}
+                    className="mb-2 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600"
+                  >
+                    <p className="font-medium">🛠 getHora</p>
+                    {(part.state === "input-streaming" ||
+                      part.state === "input-available") && (
+                      <p className="text-zinc-500">Consultando la hora…</p>
+                    )}
+                    {part.state === "output-available" && (
+                      <pre className="whitespace-pre-wrap text-zinc-500">
+                        {JSON.stringify(part.output, null, 2)}
+                      </pre>
+                    )}
+                    {part.state === "output-error" && (
+                      <p className="text-red-600">Error: {part.errorText}</p>
+                    )}
+                  </div>
+                );
+              }
               return null;
             })}
           </div>

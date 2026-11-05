@@ -1,5 +1,38 @@
-import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  tool,
+  type UIMessage,
+} from "ai";
+import { z } from "zod";
 import { MODEL_ID, model } from "@/lib/ai";
+
+// Una herramienta = descripción + esquema de entrada + función execute.
+// El modelo solo ve la descripción y el esquema; execute corre en TU servidor.
+const getHora = tool({
+  description:
+    "Devuelve la fecha y hora actual en una zona horaria. Úsala siempre que el usuario pregunte la hora.",
+  // En v7 se llama `inputSchema` (en v3/v4 era `parameters`).
+  inputSchema: z.object({
+    zonaHoraria: z
+      .string()
+      .describe("Zona horaria IANA, por ejemplo 'America/Lima' o 'Europe/Madrid'"),
+  }),
+  execute: async ({ zonaHoraria }) => {
+    try {
+      const hora = new Intl.DateTimeFormat("es-PE", {
+        dateStyle: "full",
+        timeStyle: "medium",
+        timeZone: zonaHoraria,
+      }).format(new Date());
+      return { zonaHoraria, hora };
+    } catch {
+      // Zona inválida: se devuelve como resultado para que el modelo se corrija.
+      return { error: `Zona horaria no válida: ${zonaHoraria}` };
+    }
+  },
+});
 
 // Instrucciones que el modelo recibe al inicio de cada petición.
 const SYSTEM_PROMPT =
@@ -17,6 +50,11 @@ export async function POST(req: Request) {
     // UIMessage (lo que ve la UI) -> ModelMessage (lo que entiende el modelo).
     // Es async en v7, hay que usar await.
     messages: await convertToModelMessages(messages),
+    tools: { getHora },
+    // Por defecto el SDK se detiene tras 1 paso: el modelo pediría la herramienta
+    // y nadie redactaría la respuesta final. Permitimos hasta 5 pasos.
+    // (En v7 el nombre real es isStepCount; stepCountIs es su alias.)
+    stopWhen: stepCountIs(5),
   });
 
   // Respuesta en el protocolo de streaming de UIMessage, que useChat sabe leer.
