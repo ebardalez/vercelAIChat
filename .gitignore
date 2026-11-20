@@ -42,3 +42,6 @@ next-env.d.ts
 
 # plantilla de entorno sí se versiona
 !.env.local.example
+
+# notas de traspaso entre sesiones
+HANDOFF.md

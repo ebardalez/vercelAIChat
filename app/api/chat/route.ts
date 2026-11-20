@@ -37,7 +37,8 @@ const getHora = tool({
 // Instrucciones que el modelo recibe al inicio de cada petición.
 const SYSTEM_PROMPT =
   process.env.SYSTEM_PROMPT ??
-  "Eres un asistente útil. Responde en español, de forma clara y concisa.";
+  "Eres un asistente útil. Responde en español, de forma clara y concisa. " +
+    "Escribe en texto plano: no uses Markdown (nada de **negritas**, # títulos ni listas con símbolos).";
 
 export async function POST(req: Request) {
   // El cliente (useChat) envía el historial como UIMessage[].
