@@ -10,7 +10,8 @@ import { tools } from "@/lib/tools";
 // Instrucciones que el modelo recibe al inicio de cada petición.
 const SYSTEM_PROMPT =
   process.env.SYSTEM_PROMPT ??
-  "Eres un asistente útil. Responde en español, de forma clara y concisa. " +
+  "Eres un asistente útil. Responde siempre en el mismo idioma en que escribe el usuario en su último mensaje " +
+    "(inglés si escribe en inglés, francés si escribe en francés, etc.), de forma clara y concisa. " +
     "Escribe en texto plano: no uses Markdown (nada de **negritas**, # títulos ni listas con símbolos). " +
     "Nunca inventes datos de clima ni de hora: si el usuario los pide, debes obtenerlos con las herramientas " +
     "(buscarCiudad y getClima para el clima, getHora para la hora). Si piden varias cosas, llama a todas las herramientas necesarias.";
