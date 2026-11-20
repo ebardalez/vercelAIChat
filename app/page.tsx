@@ -61,9 +61,15 @@ export default function Chat() {
                   >
                     <p className="font-medium">🛠 getHora</p>
                     {(part.state === "input-streaming" ||
-                      part.state === "input-available") && (
-                      <p className="text-zinc-500">Consultando la hora…</p>
-                    )}
+                      part.state === "input-available") &&
+                      // Si pulsas Detener a mitad, el part se queda en estos estados
+                      // para siempre. Solo es "en curso" si este es el último mensaje
+                      // y aún se está generando.
+                      (isLoading && message.id === messages.at(-1)?.id ? (
+                        <p className="text-zinc-500">Consultando la hora…</p>
+                      ) : (
+                        <p className="text-zinc-500">Interrumpido</p>
+                      ))}
                     {part.state === "output-available" && (
                       <pre className="whitespace-pre-wrap text-zinc-500">
                         {JSON.stringify(part.output, null, 2)}
