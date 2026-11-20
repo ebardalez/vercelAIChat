@@ -2,11 +2,15 @@
 
 import { useChat } from "@ai-sdk/react";
 import { getToolName, isToolUIPart } from "ai";
+// `import type` se borra al compilar: el navegador no recibe código de servidor.
+import type { ChatMessage } from "@/lib/tools";
 import { useState } from "react";
 
 export default function Chat() {
   // useChat guarda los mensajes (UIMessage[]) y hace POST a /api/chat por defecto.
-  const { messages, sendMessage, status, stop, error, regenerate } = useChat();
+  // El genérico <ChatMessage> hace que los tool parts conozcan su input/output reales.
+  const { messages, sendMessage, status, stop, error, regenerate } =
+    useChat<ChatMessage>();
   const [input, setInput] = useState("");
 
   // "submitted": petición enviada, aún sin tokens. "streaming": llegando tokens.
@@ -73,11 +77,21 @@ export default function Chat() {
                       ) : (
                         <p className="text-zinc-500">Interrumpido</p>
                       ))}
-                    {part.state === "output-available" && (
-                      <pre className="whitespace-pre-wrap text-zinc-500">
-                        {JSON.stringify(part.output, null, 2)}
-                      </pre>
-                    )}
+                    {part.state === "output-available" &&
+                      // Gracias a ChatMessage, aquí `part.output` tiene el tipo real de getClima.
+                      // `temperaturaC !== undefined` descarta la variante { error } de la unión.
+                      (part.type === "tool-getClima" &&
+                      part.output.temperaturaC !== undefined ? (
+                        <p className="text-zinc-500">
+                          {part.output.temperaturaC} °C · {part.output.humedadPct} % de
+                          humedad · viento {part.output.vientoKmh} km/h ·{" "}
+                          {part.output.cielo}
+                        </p>
+                      ) : (
+                        <pre className="whitespace-pre-wrap text-zinc-500">
+                          {JSON.stringify(part.output, null, 2)}
+                        </pre>
+                      ))}
                     {part.state === "output-error" && (
                       <p className="text-red-600">Error: {part.errorText}</p>
                     )}
