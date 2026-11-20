@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { getToolName, isToolUIPart } from "ai";
 import { useState } from "react";
 
 export default function Chat() {
@@ -50,7 +51,9 @@ export default function Chat() {
                   </details>
                 );
               }
-              if (part.type === "tool-getHora") {
+              // isToolUIPart reconoce el part de CUALQUIER herramienta (tool-getHora,
+              // tool-buscarCiudad, tool-getClima...), así no repetimos este bloque.
+              if (isToolUIPart(part)) {
                 // Un part de herramienta cambia de `state` mientras avanza el stream:
                 // input-streaming -> input-available -> output-available | output-error
                 // Usamos part.toolCallId como key porque el mismo part se va actualizando.
@@ -59,14 +62,14 @@ export default function Chat() {
                     key={part.toolCallId}
                     className="mb-2 rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-600"
                   >
-                    <p className="font-medium">🛠 getHora</p>
+                    <p className="font-medium">🛠 {getToolName(part)}</p>
                     {(part.state === "input-streaming" ||
                       part.state === "input-available") &&
                       // Si pulsas Detener a mitad, el part se queda en estos estados
                       // para siempre. Solo es "en curso" si este es el último mensaje
                       // y aún se está generando.
                       (isLoading && message.id === messages.at(-1)?.id ? (
-                        <p className="text-zinc-500">Consultando la hora…</p>
+                        <p className="text-zinc-500">Consultando…</p>
                       ) : (
                         <p className="text-zinc-500">Interrumpido</p>
                       ))}
