@@ -45,3 +45,7 @@ next-env.d.ts
 
 # notas de traspaso entre sesiones
 HANDOFF.md
+
+# configuración local del harness (servidores MCP, skills)
+/data/harness.json
+/data/harness.json.tmp
